@@ -31,19 +31,6 @@ jobs:
           root: .
           paths:
             - dist
-            - package.json
-            - README.md
-            - LICENSE
-  test:
-    <<: *defaults
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - run: yarn ci
-      - run: bash <(curl -s https://codecov.io/bash)
-      - store_test_results:
-          path: test-results
   publish:
     <<: *defaults
     steps:
