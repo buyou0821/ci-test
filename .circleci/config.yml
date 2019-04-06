@@ -56,12 +56,10 @@ workflows:
   build_accept_deploy:
     jobs:
       - prepare
-      - build:
-          requires:
-            - test
+      - build
       - publish:
           requires:
-            - test
+            - build
           filters:
             tags:
               only: /^v[0-9]+(\.[0-9]+)*$/
