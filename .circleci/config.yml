@@ -1,0 +1,69 @@
+defaults: &defaults
+  docker:
+    - image: circleci/node:8
+
+version: 2
+jobs:
+  prepare:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+      - run: yarn install
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+      - persist_to_workspace:
+          root: .
+          paths:
+            - node_modules
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: yarn build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist
+            - package.json
+            - README.md
+            - LICENSE
+  test:
+    <<: *defaults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: yarn ci
+      - run: bash <(curl -s https://codecov.io/bash)
+      - store_test_results:
+          path: test-results
+  publish:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: .
+      - run: echo publish
+
+workflows:
+  version: 2
+  build_accept_deploy:
+    jobs:
+      - prepare
+      - build:
+          requires:
+            - test
+      - publish:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*$/
+            branches:
+              ignore: /.*/
