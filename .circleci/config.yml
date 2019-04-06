@@ -44,6 +44,8 @@ workflows:
     jobs:
       - prepare
       - build
+          requires:
+            - prepare
       - publish:
           requires:
             - build
